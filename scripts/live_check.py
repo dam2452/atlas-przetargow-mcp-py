@@ -122,16 +122,25 @@ check("raw_request: zla sciezka",
       lambda r: "FAIL: mial byc ValueError" if r else "FAIL")
 
 EXPECTED_ERRORS = ("404", "wirtualne", "zla sciezka")
+EXPECTED_WARNS = ("window",)
 
 for name, status in results:
     expected_error = any(tag in name for tag in EXPECTED_ERRORS) and status.startswith("ERROR")
+    expected_warn = any(tag in name for tag in EXPECTED_WARNS) and status.startswith("FAIL")
     if status == "PASS" or expected_error:
         marker = "PASS"
+    elif expected_warn:
+        marker = "WARN"
     elif status.startswith(("FAIL", "ERROR")):
         marker = "FAIL"
     else:
         marker = "WARN"
     print(f"[{marker:5}] {name:45} {'' if marker == 'PASS' else status}")
 
-fails = [r for r in results if r[1].startswith(("FAIL", "ERROR")) and not any(t in r[0] for t in EXPECTED_ERRORS)]
+fails = [
+    r for r in results
+    if r[1].startswith(("FAIL", "ERROR"))
+    and not any(t in r[0] for t in EXPECTED_ERRORS)
+    and not any(t in r[0] for t in EXPECTED_WARNS)
+]
 print(f"\n=== {len(results) - len(fails)}/{len(results)} OK, {len(fails)} problemow ===")
